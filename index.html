@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#070a12">
+<title>Neon Snake</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%90%8D%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="style.css">
+</head>
+<body data-state="menu">
+<div id="app">
+
+  <header id="hud">
+    <div class="hud-stats">
+      <div class="stat"><span class="lbl">Score</span><span class="val" id="hudScore">0</span></div>
+      <div class="stat"><span class="lbl">Best</span><span class="val gold" id="hudBest">0</span></div>
+      <div class="stat"><span class="lbl">Level</span><span class="val" id="hudLevel">1</span></div>
+    </div>
+    <div class="hud-btns">
+      <button class="icon-btn" id="btnMusic" aria-label="Toggle music">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l11-2v13"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="17.5" cy="16" r="2.5"/></svg>
+      </button>
+      <button class="icon-btn" id="btnSfx" aria-label="Toggle sound effects">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H3v6h3l5 4z" fill="currentColor" stroke="none"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/></svg>
+      </button>
+      <button class="icon-btn" id="btnPause" aria-label="Pause">
+        <span class="ic ic-pause"><svg viewBox="0 0 24 24" width="20" height="20"><path d="M7 5h4v14H7zM13 5h4v14h-4z" fill="currentColor"/></svg></span>
+        <span class="ic ic-play hidden"><svg viewBox="0 0 24 24" width="20" height="20"><path d="M8 5v14l11-7z" fill="currentColor"/></svg></span>
+      </button>
+    </div>
+  </header>
+
+  <main id="stage">
+    <canvas id="game"></canvas>
+    <div id="buffbar"></div>
+    <div id="combo" class="hidden">x2</div>
+    <div id="toast"></div>
+
+    <div class="overlay" id="menuOverlay">
+      <div class="panel menu">
+        <h1 class="title">NEON<em>SNAKE</em></h1>
+        <p class="tagline">Eat &middot; Grow &middot; Survive</p>
+        <div class="fruit-legend" aria-hidden="true"><span>🍎</span> <span>🍊</span> <span>🫐</span> <span>🍇</span> <span>🍒</span> <span>✨</span></div>
+        <p class="quick-rules">🍎 Eat fruits to grow &amp; score &nbsp;·&nbsp; 🧱 Avoid walls, rocks &amp; your own tail &nbsp;·&nbsp; ⚡ Chain fruits fast for a combo up to x5</p>
+        <div class="best-line"><span>BEST</span><b id="menuBest">0</b></div>
+        <div id="menuBestMode" class="best-mode" aria-label="Mode of best score"></div>
+        <button class="btn primary big" id="btnPlay">
+          <svg viewBox="0 0 24 24" width="18" height="18"><path d="M8 5v14l11-7z" fill="currentColor"/></svg>
+          PLAY
+        </button>
+        <div class="row2 three">
+          <button class="btn" id="btnHow">HOW TO PLAY</button>
+          <button class="btn" id="btnStore">STORE</button>
+          <button class="btn" id="btnSettings">SETTINGS</button>
+        </div>
+        <p class="foot" id="menuFoot"></p>
+      </div>
+    </div>
+
+    <div class="overlay hidden" id="settingsOverlay">
+      <div class="panel">
+        <div class="panel-head">
+          <h2>SETTINGS</h2>
+          <button class="icon-btn" id="btnCloseSettings" aria-label="Close settings">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+          </button>
+        </div>
+        <div class="group">
+          <div class="glabel">Difficulty</div>
+          <div class="seg" data-setting="difficulty">
+            <button data-val="classic">Classic</button>
+            <button data-val="insane">Insane</button>
+          </div>
+        </div>
+        <div class="group">
+          <div class="glabel">Walls</div>
+          <div class="seg" data-setting="walls">
+            <button data-val="solid">Solid</button>
+            <button data-val="wrap">Wrap-around</button>
+          </div>
+        </div>
+        <div class="group">
+          <div class="glabel">Obstacles</div>
+          <div class="seg" data-setting="obstacles">
+            <button data-val="off">Off</button>
+            <button data-val="on">On</button>
+          </div>
+        </div>
+        <div class="group">
+          <div class="glabel">Touch pad</div>
+          <div class="seg" data-setting="touch">
+            <button data-val="auto">Auto</button>
+            <button data-val="on">On</button>
+            <button data-val="off">Off</button>
+          </div>
+        </div>
+        <div class="switches">
+          <label class="switch"><span>Music</span><input type="checkbox" id="swMusic"><i></i></label>
+          <label class="switch"><span>Sound FX</span><input type="checkbox" id="swSfx"><i></i></label>
+          <label class="switch"><span>Vibration</span><input type="checkbox" id="swHaptics"><i></i></label>
+          <label class="switch"><span>Light mode</span><input type="checkbox" id="swMode"><i></i></label>
+        </div>
+      </div>
+    </div>
+
+    <div class="overlay hidden" id="storeOverlay">
+      <div class="panel">
+        <div class="panel-head">
+          <h2>STORE</h2>
+          <div class="star-bal" title="Stars collected in game">★ <b id="storeStars">0</b></div>
+          <button class="icon-btn" id="btnCloseStore" aria-label="Close store">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+          </button>
+        </div>
+        <p class="store-hint">Eat ✨ golden fruit (+1 ★) and ★ bonus stars (+2 ★) to earn stars, then spend them here</p>
+        <div class="group">
+          <div class="glabel">Snake skins</div>
+          <div class="store-grid" id="storeThemes"></div>
+        </div>
+        <div class="group">
+          <div class="glabel">Snake shape</div>
+          <div class="store-grid" id="storeForms"></div>
+        </div>
+        <div class="group">
+          <div class="glabel">Fruits</div>
+          <div class="store-grid" id="storeFruits"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="overlay hidden" id="howOverlay">
+      <div class="panel">
+        <div class="panel-head">
+          <h2>HOW TO PLAY</h2>
+          <button class="icon-btn" id="btnCloseHow" aria-label="Close how to play">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+          </button>
+        </div>
+        <div class="howto">
+          <ul>
+            <li><b>Move</b> — Arrow keys / WASD, swipe on the board, or the D-pad</li>
+            <li><b>Pause</b> — P, Space or Esc</li>
+            <li><b>Music</b> — M &nbsp;·&nbsp; <b>Sound FX</b> — N</li>
+            <li>Chain fruits quickly to build a <b>combo multiplier</b> (up to x5)</li>
+            <li>Fruits are worth different points: 🍎 10 · 🍊 15 · 🫐 20 · 🍇 25 · 🍒 30 · ✨ golden 50</li>
+            <li>Golden stars appear every 5 fruits — grab them before they vanish for big points</li>
+            <li>Glowing orbs grant power-ups: Slow-Mo, 2X Points, Shield (10s, protects walls, obstacles + self-bites, flashes last 3s) and Magnet</li>
+            <li>Every 5 fruits you level up: faster snake, more obstacles</li>
+            <li>Wrap-around mode turns walls into portals — the snake dives through instead of dying</li>
+            <li>Unlock new snake colors by beating score milestones — or buy them in the <b>Store</b></li>
+            <li>Eat ✨ golden fruit (+1 ★) and ★ bonus stars (+2 ★) to earn <b>stars</b>, then spend them in the <b>Store</b> on skins, snake shapes and fruits</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="overlay hidden" id="pauseOverlay">
+      <div class="panel small">
+        <h2 class="pausetitle">PAUSED</h2>
+        <button class="btn primary big" id="btnResume">RESUME</button>
+        <div class="row2">
+          <button class="btn" id="btnRestart">RESTART</button>
+          <button class="btn" id="btnQuit">MENU</button>
+        </div>
+        <p class="hint">P or Space to resume</p>
+      </div>
+    </div>
+
+    <div class="overlay hidden" id="overOverlay">
+      <div class="panel small">
+        <h2 class="overtitle" id="overTitle">GAME OVER</h2>
+        <div id="newBest" class="ribbon hidden">NEW BEST!</div>
+        <div id="overMode" class="over-mode"></div>
+        <div class="stats-grid">
+          <div class="gstat"><span>Score</span><b id="fScore">0</b></div>
+          <div class="gstat"><span id="fBestLabel">Mode best</span><b id="fBest">0</b></div>
+          <div class="gstat"><span>Length</span><b id="fLen">0</b></div>
+          <div class="gstat"><span>Fruits</span><b id="fApples">0</b></div>
+          <div class="gstat"><span>Max combo</span><b id="fCombo">x1</b></div>
+          <div class="gstat"><span>Time</span><b id="fTime">0:00</b></div>
+        </div>
+        <button class="btn primary big" id="btnAgain">PLAY AGAIN</button>
+        <button class="btn" id="btnOverMenu">MENU</button>
+      </div>
+    </div>
+  </main>
+
+  <div id="dpadWrap">
+    <div id="dpad">
+      <button class="dbtn up" data-dir="up" aria-label="Up">
+        <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>
+      </button>
+      <button class="dbtn left" data-dir="left" aria-label="Left">
+        <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>
+      </button>
+      <button class="dbtn down" data-dir="down" aria-label="Down">
+        <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>
+      </button>
+      <button class="dbtn right" data-dir="right" aria-label="Right">
+        <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>
+      </button>
+    </div>
+  </div>
+
+</div>
+<script src="audio.js"></script>
+<script src="game.js"></script>
+</body>
+</html>
